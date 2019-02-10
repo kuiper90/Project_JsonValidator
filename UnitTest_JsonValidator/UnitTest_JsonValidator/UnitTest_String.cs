@@ -6,7 +6,7 @@ namespace UnitTest_JsonValidator
     public class UnitTest_String
     {
         [Fact]
-        public void ShouldBe_True_UnicodeNumbersAndNewline()
+        public void ShouldBe_True_UnicodeNumberAndNewline()
         {
             Assert.True(StringValidator.ValidateString("\"Test\\u0097\nAnother line\""));
         }
@@ -63,6 +63,18 @@ namespace UnitTest_JsonValidator
         public void ShouldBe_False_InternEscapedDoubleQuotes()
         {
             Assert.False(StringValidator.ValidateString("\"Te\"st\""));
+        }
+
+        [Fact]
+        public void ShouldBe_False_InternDoubleReverseSolidus()
+        {
+            Assert.False(StringValidator.ValidateString("\"Te\\\\st\""));
+        }
+
+        [Fact]
+        public void ShouldBe_True_DoubleQuotes()
+        {
+            Assert.True(StringValidator.ValidateString("\"\""));
         }
     }
 }

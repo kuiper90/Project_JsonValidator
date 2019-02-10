@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace JsonValidator
 {
@@ -59,17 +55,45 @@ namespace JsonValidator
 
         public static void Main()
         {
+            //string
             Console.WriteLine((ValidateString("\"Test\\u0097\nAnother line\"") == true));
             Console.WriteLine((ValidateString("\"abc\"") == true));
             Console.WriteLine((ValidateString("\"abc\"\"") == false));
             Console.WriteLine((ValidateString("\"ab\"c\"") == false));
             Console.WriteLine((ValidateString("\"ab12\\uc\"") == false));
-
             Console.WriteLine((ValidateString("Test\"") == false));
             Console.WriteLine((ValidateString("\"Test") == false));
             Console.WriteLine((ValidateString("\"\\Test\"") == false));
-            Console.WriteLine((ValidateString("\"ab12\\rc\"") == false));
+            Console.WriteLine((ValidateString("\"ab12\\rc\"") == true));
             Console.WriteLine((ValidateString("\"Te\"st\"") == false));
+            Console.WriteLine((ValidateString("\"Te\\\\st\"") == false));
+
+            Console.WriteLine();
+
+            //number
+            Console.WriteLine((NumberValidator.ValidateNumber("234") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("-123") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.34") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.123e3") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.123E+3") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.123E-2") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("012") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.123E") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber(".") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber(".5") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("0.") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("123.E15") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("-123.E-15") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("-123.1E-15") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("e") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber(".e") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("e.") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("00") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("0") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("-123.0E-15") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("-0-e12") == false));
+            Console.WriteLine((NumberValidator.ValidateNumber("12.0E+2") == true));
 
             Console.ReadLine();
         }

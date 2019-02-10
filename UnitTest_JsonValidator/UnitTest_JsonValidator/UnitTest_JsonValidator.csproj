@@ -62,6 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UnitTest_Number.cs" />
     <Compile Include="UnitTest_String.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
