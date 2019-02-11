@@ -154,5 +154,11 @@ namespace UnitTest_JsonValidator
         {
             Assert.True(NumberValidator.ValidateNumber("12.0E+2"));
         }
+
+        [Fact]
+        public void ShouldBe_False_EmtpyNumber()
+        {
+            Assert.False(NumberValidator.ValidateNumber(""));
+        }
     }
 }

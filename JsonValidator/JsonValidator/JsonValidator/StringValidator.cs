@@ -5,17 +5,23 @@ namespace JsonValidator
 {
     public class StringValidator
     {
+        public static bool IsNullOrEmpty(string inputString)
+        {
+            return ((inputString.Length == 0) || (inputString is null));
+        }
+
         public static bool IsQuotationMark(char ch)
         {
-            return ((ch == '"') ? true : false);
+            return (ch == '"');
         }
 
         public static bool IsControlChar(char ch)
         {
             int j = "\n\r\t\b\f".IndexOf(ch);
+
             if (j >= 0)
                 return (false);
-            return((ch < 32) ? true : false);
+            return(ch < 32);
         }
 
         public static bool IsUnicodeChar(string inputString, int i, int sizeinputString)
@@ -32,6 +38,8 @@ namespace JsonValidator
         {
             int sizeinputString = inputString.Length - 1;
 
+            if (IsNullOrEmpty(inputString))
+                return (false);
             if (!(IsQuotationMark(inputString[0]) && IsQuotationMark(inputString[sizeinputString])))
                 return (false);
             for (int i = 1; i < sizeinputString; i++)
@@ -67,6 +75,7 @@ namespace JsonValidator
             Console.WriteLine((ValidateString("\"ab12\\rc\"") == true));
             Console.WriteLine((ValidateString("\"Te\"st\"") == false));
             Console.WriteLine((ValidateString("\"Te\\\\st\"") == false));
+            Console.WriteLine((ValidateString("") == false));
 
             Console.WriteLine();
 
@@ -94,6 +103,7 @@ namespace JsonValidator
             Console.WriteLine((NumberValidator.ValidateNumber("-123.0E-15") == true));
             Console.WriteLine((NumberValidator.ValidateNumber("-0-e12") == false));
             Console.WriteLine((NumberValidator.ValidateNumber("12.0E+2") == true));
+            Console.WriteLine((NumberValidator.ValidateNumber("") == false));
 
             Console.ReadLine();
         }

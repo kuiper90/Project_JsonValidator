@@ -26,17 +26,17 @@ namespace JsonValidator
 
         public static bool IsNegativeSign(char ch)
         {
-            return ((ch == '-') ? true : false);
+            return (ch == '-');
         }
 
         public static bool IsPositiveSign(char ch)
         {
-            return ((ch == '+') ? true : false);
+            return (ch == '+');
         }
 
         public static bool IsZero(char ch)
         {
-            return ((ch == '0') ? true : false);
+            return (ch == '0');
         }
 
         public static bool IsDigit(char ch)

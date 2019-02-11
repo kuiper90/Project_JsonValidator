@@ -76,5 +76,11 @@ namespace UnitTest_JsonValidator
         {
             Assert.True(StringValidator.ValidateString("\"\""));
         }
+
+        [Fact]
+        public void ShouldBe_False_EmtpyString()
+        {
+            Assert.False(StringValidator.ValidateString(""));
+        }
     }
 }
