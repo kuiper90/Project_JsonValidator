@@ -1,86 +1,138 @@
-﻿using JsonValidator;
-using Xunit;
+﻿using Xunit;
+using static JsonValidator.StringValidator;
 
 namespace UnitTest_JsonValidator
 {
     public class UnitTest_String
     {
         [Fact]
-        public void ShouldBe_True_UnicodeNumberAndNewline()
+        public void IsWrappedInDoubleQuotes()
         {
-            Assert.True(StringValidator.ValidateString("\"Test\\u0097\nAnother line\""));
+            Assert.True(IsJsonString(Quoted("abc")));
         }
 
         [Fact]
-        public void ShouldBe_True_StartAndEndDoubleQuotes()
+        public void AlwaysStartsWithQuotes()
         {
-            Assert.True(StringValidator.ValidateString("\"abc\""));
+            Assert.False(IsJsonString("abc\""));
         }
 
         [Fact]
-        public void ShouldBe_False_EndExtraEscapedDoubleQuotes()
+        public void AlwaysEndsWithQuotes()
         {
-            Assert.False(StringValidator.ValidateString("\"abc\"\""));
+            Assert.False(IsJsonString("\"abc"));
         }
 
         [Fact]
-        public void ShouldBe_False_MidEscapedDoubleQuotes()
+        public void IsNotNull()
         {
-            Assert.False(StringValidator.ValidateString("\"ab\"c\""));
+            Assert.False(IsJsonString(null));
         }
 
         [Fact]
-        public void ShouldBe_False_UnicodeNumberOneHex()
+        public void IsNotAnEmptyString()
         {
-            Assert.False(StringValidator.ValidateString("\"ab12\\uc\""));
+            Assert.False(IsJsonString(string.Empty));
         }
 
         [Fact]
-        public void ShouldBe_False_StartNoDoubleQuotes()
+        public void IsAnEmptyDoubleQuotedString()
         {
-            Assert.False(StringValidator.ValidateString("Test\""));
+            Assert.True(IsJsonString(Quoted(string.Empty)));
         }
 
         [Fact]
-        public void ShouldBe_False_EndNoDoubleQuotes()
+        public void HasStartAndEndQuotes()
         {
-            Assert.False(StringValidator.ValidateString("\"Test"));
+            Assert.False(IsJsonString("\""));
         }
 
         [Fact]
-        public void ShouldBe_False_StartEscapedReverseSolidus()
+        public void DoesNotContainControlCharacters()
         {
-            Assert.False(StringValidator.ValidateString("\"\\Test\""));
+            Assert.False(IsJsonString(Quoted("a\nb\rc")));
         }
 
         [Fact]
-        public void ShouldBe_False_EscapeCarriageReturn()
+        public void CanContainLargeUnicodeCharacters()
         {
-            Assert.True(StringValidator.ValidateString("\"ab12\\rc\""));
+            Assert.True(IsJsonString(Quoted("⛅⚾")));
         }
 
         [Fact]
-        public void ShouldBe_False_InternEscapedDoubleQuotes()
+        public void CanContainEscapedQuotationMark()
         {
-            Assert.False(StringValidator.ValidateString("\"Te\"st\""));
+            Assert.True(IsJsonString(Quoted(@"\""a\"" b")));
         }
 
         [Fact]
-        public void ShouldBe_False_InternDoubleReverseSolidus()
+        public void CanContainEscapedReverseSolidus()
         {
-            Assert.False(StringValidator.ValidateString("\"Te\\\\st\""));
+            Assert.True(IsJsonString(Quoted(@"a \\ b")));
         }
 
         [Fact]
-        public void ShouldBe_True_DoubleQuotes()
+        public void CanContainEscapedSolidus()
         {
-            Assert.True(StringValidator.ValidateString("\"\""));
+            Assert.True(IsJsonString(Quoted(@"a \/ b")));
         }
 
         [Fact]
-        public void ShouldBe_False_EmtpyString()
+        public void CanContainEscapedBackspace()
         {
-            Assert.False(StringValidator.ValidateString(""));
+            Assert.True(IsJsonString(Quoted(@"a \b b")));
         }
+
+        [Fact]
+        public void CanContainEscapedFormFeed()
+        {
+            Assert.True(IsJsonString(Quoted(@"a \f b")));
+        }
+
+        [Fact]
+        public void CanContainEscapedLineFeed()
+        {
+            Assert.True(IsJsonString(Quoted(@"a \n b")));
+        }
+
+        [Fact]
+        public void CanContainEscapedCarrigeReturn()
+        {
+            Assert.True(IsJsonString(Quoted(@"a \r b")));
+        }
+
+        [Fact]
+        public void CanContainEscapedHorizontalTab()
+        {
+            Assert.True(IsJsonString(Quoted(@"a \t b")));
+        }
+
+        [Fact]
+        public void CanContainEscapedUnicodeCharacters()
+        {
+            Assert.True(IsJsonString(Quoted(@"a \u26Be b")));
+        }
+
+        [Fact]
+        public void DoesNotContainUnrecognizedExcapceCharacters()
+        {
+            Assert.False(IsJsonString(Quoted(@"a\x")));
+        }
+
+        [Fact]
+        public void DoesNotEndWithReverseSolidus()
+        {
+            Assert.False(IsJsonString(Quoted(@"a\")));
+        }
+
+        [Fact]
+        public void DoesNotEndWithAnUnfinishedHexNumber()
+        {
+            Assert.False(IsJsonString(Quoted(@"a\u")));
+            Assert.False(IsJsonString(Quoted(@"a\u123")));
+        }
+
+        public static string Quoted(string text)
+            => $"\"{text}\"";
     }
 }

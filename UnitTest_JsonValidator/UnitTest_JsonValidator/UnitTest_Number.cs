@@ -1,164 +1,149 @@
-using JsonValidator;
 using Xunit;
+using static JsonValidator.NumberValidator;
 
 namespace UnitTest_JsonValidator
 {
     public class UnitTest_Number
     {
         [Fact]
-        public void ShouldBe_True_UnsignedByte()
+        public void CanBeZero()
         {
-            Assert.True(NumberValidator.ValidateNumber("234"));
+            Assert.True(IsJsonNumber("0"));
         }
 
         [Fact]
-        public void ShouldBe_True_SignedByte()
+        public void DoesNotContainLetters()
         {
-            Assert.True(NumberValidator.ValidateNumber("-123"));
+            Assert.False(IsJsonNumber("a"));
         }
 
         [Fact]
-        public void ShouldBe_True_Float()
+        public void CanHaveASingleDigit()
         {
-            Assert.True(NumberValidator.ValidateNumber("12.34"));
+            Assert.True(IsJsonNumber("7"));
         }
 
         [Fact]
-        public void ShouldBe_True_FloatWithPositiveExponent1()
+        public void CanHaveMultipleDigits()
         {
-            Assert.True(NumberValidator.ValidateNumber("12.123e3"));
+            Assert.True(IsJsonNumber("70"));
         }
 
         [Fact]
-        public void ShouldBe_True_FloatWithPositiveExponent2()
+        public void IsNotNull()
         {
-            Assert.True(NumberValidator.ValidateNumber("12.123E+3"));
+            Assert.False(IsJsonNumber(null));
         }
 
         [Fact]
-        public void ShouldBe_True_FloatWithNegativeExponent()
+        public void IsNotAnEmptyString()
         {
-            Assert.True(NumberValidator.ValidateNumber("12.123E-2"));
+            Assert.False(IsJsonNumber(string.Empty));
         }
 
         [Fact]
-        public void ShouldBe_False_UnsignedByteStartWithZero()
+        public void DoesNotStartWithZero()
         {
-            Assert.False(NumberValidator.ValidateNumber("012"));
+            Assert.False(IsJsonNumber("07"));
         }
 
         [Fact]
-        public void ShouldBe_False_FloatNoExp()
+        public void CanBeNegative()
         {
-            Assert.False(NumberValidator.ValidateNumber("12.123E"));
+            Assert.True(IsJsonNumber("-26"));
         }
 
         [Fact]
-        public void ShouldBe_False_UnsignedByteEndWithPeriod()
+        public void CanBeMinusZero()
         {
-            Assert.False(NumberValidator.ValidateNumber("12."));
+            Assert.True(IsJsonNumber("-0"));
         }
 
         [Fact]
-        public void ShouldBe_False_Period()
+        public void CanBeFractional()
         {
-            Assert.False(NumberValidator.ValidateNumber("."));
+            Assert.True(IsJsonNumber("12.34"));
         }
 
         [Fact]
-        public void ShouldBe_False_PeriodDigit()
+        public void TheFractionCanHaveLeadingZeros()
         {
-            Assert.False(NumberValidator.ValidateNumber(".5"));
+            Assert.True(IsJsonNumber("0.00000001"));
+            Assert.True(IsJsonNumber("10.00000001"));
         }
 
         [Fact]
-        public void ShouldBe_False_ZeroPeriod()
+        public void DoesNotEndWithADot()
         {
-            Assert.False(NumberValidator.ValidateNumber("0."));
+            Assert.False(IsJsonNumber("12."));
         }
 
         [Fact]
-        public void ShouldBe_False_FloatNoFractionalPartWithExp()
+        public void DoesNotHaveTwoFractionParts()
         {
-            Assert.False(NumberValidator.ValidateNumber("123.E15"));
+            Assert.False(IsJsonNumber("12.34.56"));
         }
 
         [Fact]
-        public void ShouldBe_False_NegFloatNoFractionalPartWithNegExp()
+        public void TheDecimalPartDoesNotAllowLetters()
         {
-            Assert.False(NumberValidator.ValidateNumber("-123.E-15"));
+            Assert.False(IsJsonNumber("12.3x"));
         }
 
         [Fact]
-        public void ShouldBe_True_NegFloatWithNegExp()
+        public void CanHaveAnExponent()
         {
-            Assert.True(NumberValidator.ValidateNumber("-123.1E-15"));
+            Assert.True(IsJsonNumber("12e3"));
         }
 
         [Fact]
-        public void ShouldBe_False_Exp()
+        public void TheExponentCanStartWithCapitalE()
         {
-            Assert.False(NumberValidator.ValidateNumber("e"));
+            Assert.True(IsJsonNumber("12E3"));
         }
 
         [Fact]
-        public void ShouldBe_False_FractionalExp()
+        public void TheExponentCanHavePositive()
         {
-            Assert.False(NumberValidator.ValidateNumber(".e"));
+            Assert.True(IsJsonNumber("12e+3"));
         }
 
         [Fact]
-        public void ShouldBe_False_FloatExp()
+        public void TheExponentCanBeNegative()
         {
-            Assert.False(NumberValidator.ValidateNumber("e."));
+            Assert.True(IsJsonNumber("61e-9"));
         }
 
         [Fact]
-        public void ShouldBe_False_DoubleZero()
+        public void CanHaveFractionAndExponent()
         {
-            Assert.False(NumberValidator.ValidateNumber("00"));
+            Assert.True(IsJsonNumber("12.34E3"));
         }
 
         [Fact]
-        public void ShouldBe_True_Zero()
+        public void TheExponentDoesNotAllowLetters()
         {
-            Assert.True(NumberValidator.ValidateNumber("0"));
+            Assert.False(IsJsonNumber("22e3x3"));
         }
 
         [Fact]
-        public void ShouldBe_True_NegFloatZeroFractionalPartWithNegExp()
+        public void DoesNotHaveTwoExponents()
         {
-            Assert.True(NumberValidator.ValidateNumber("-123.0E-15"));
+            Assert.False(IsJsonNumber("22e323e33"));
         }
 
         [Fact]
-        public void ShouldBe_False_NegFloatWithNegFractionalExp()
+        public void TheExponentIsAlwaysComplete()
         {
-            Assert.False(NumberValidator.ValidateNumber("-123.01E-1.5"));
+            Assert.False(IsJsonNumber("22e"));
+            Assert.False(IsJsonNumber("22e+"));
+            Assert.False(IsJsonNumber("23E-"));
         }
 
         [Fact]
-        public void ShouldBe_False_NegFloatWithDoubleNegExp()
+        public void TheExponentIsAfterTheFraction()
         {
-            Assert.False(NumberValidator.ValidateNumber("-123.01Ee-15"));
-        }
-
-        [Fact]
-        public void ShouldBe_False_NegZeroMinusExp()
-        {
-            Assert.False(NumberValidator.ValidateNumber("-0-e12"));
-        }
-
-        [Fact]
-        public void ShouldBe_True_NegFloatZeroFractionalPartWithPosEx()
-        {
-            Assert.True(NumberValidator.ValidateNumber("12.0E+2"));
-        }
-
-        [Fact]
-        public void ShouldBe_False_EmtpyNumber()
-        {
-            Assert.False(NumberValidator.ValidateNumber(""));
+            Assert.False(IsJsonNumber("22e3.3"));
         }
     }
 }

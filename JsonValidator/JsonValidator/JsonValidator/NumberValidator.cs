@@ -1,158 +1,125 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JsonValidator
+﻿namespace JsonValidator
 {
     public class NumberValidator
     {
-        public struct Count
-        {
-            public int countPeriods;
-            public int countE;
-            public int eIndex;
-            public int periodIndex;
+        public static bool IsJsonNumber(string input)
+            => !IsNullOrEmpty(input) && IsNumber(input);
 
-            public Count(int countPeriods, int countE, int eIndex, int periodIndex)
+        static bool IsNumber(string input)
+        {
+            int i = 0;
+            if (IsSign(input[0]))
             {
-                this.countPeriods = countPeriods;
-                this.countE = countE;
-                this.eIndex = eIndex;
-                this.periodIndex = periodIndex;
+                i = 1;
             }
-        }
 
-        public static bool IsNegativeSign(char ch)
-        {
-            return (ch == '-');
-        }
-
-        public static bool IsPositiveSign(char ch)
-        {
-            return (ch == '+');
-        }
-
-        public static bool IsZero(char ch)
-        {
-            return (ch == '0');
-        }
-
-        public static bool IsDigit(char ch)
-        {
-            return (((ch >= '0') && (ch <= '9')));
-        }
-
-        public static Count CountPeriods(string inputString, int sizeInputString)
-        {
-            Count countInput = new Count(0, 0, -1, -1);
-
-            for (int i = 0; i < sizeInputString; i++)
+            if (input.IndexOf('.') >= 0)
             {
-                if (inputString[i] == '.')
+                return IsRational(input, i);
+            }
+
+            return IsNatural(input, i);
+        }
+
+        static bool IsNatural(string input, int i)
+        {
+            if (IsZero(input[i]) && i < input.Length - 1)
+            {
+                return false;
+            }
+
+            return SequenceValidator(input, i);
+        }
+
+        static bool IsRational(string input, int i)
+            => IntegerPartValidator(input, ref i) &&
+            i != input.Length &&
+            FractionalPartValidator(input, ref i);
+
+        static bool IntegerPartValidator(string input, ref int i)
+        {
+            if (input[i] == '0' && !IsPeriodContext(input, i + 1))
+            {
+                return false;
+            }
+
+            while (input[i] != '.')
+            {
+                if (!IsDigit(input[i]))
                 {
-                    countInput.periodIndex = i;
-                    countInput.countPeriods++;
+                    return false;
                 }
-                else if ((inputString[i] == 'e') || (inputString[i] == 'E'))
+
+                i++;
+            }
+
+            i++;
+            return true;
+        }
+
+        static bool FractionalPartValidator(string input, ref int i)
+        {
+            if (i == input.Length)
+            {
+                return false;
+            }
+
+            return SequenceValidator(input, i);
+        }
+
+        private static bool SequenceValidator(string input, int i)
+        {
+            int posExp = GetExponentIndex(input);
+            if (posExp != -1)
+            {
+                if (!CheckDigitSequence(input, ref i, posExp) || i == input.Length - 1)
                 {
-                    countInput.eIndex = i;
-                    countInput.countE++;
+                    return false;
                 }
-                if ((countInput.countE > 1) || (countInput.countE > 1))
-                    break;
-            }
-            return (countInput);
-        }      
 
-        public static bool CheckIfOnlyDigits(string inputString, int startPos, int endPos)
+                if (IsSign(input[++i]) && i < input.Length - 1)
+                {
+                    i++;
+                }
+            }
+
+            return CheckDigitSequence(input, ref i, input.Length);
+        }
+
+        static bool CheckDigitSequence(string input, ref int i, int end)
         {
-            while (startPos < endPos)
+            while (i < end)
             {
-                if (!IsDigit(inputString[startPos++]))
-                    return (false);
+                if (!IsDigit(input[i]))
+                {
+                    return false;
+                }
+
+                i++;
             }
-            return (true);
+
+            return true;
         }
 
-        public static bool CheckOnePeriod(string inputString, int startPos, int endPos)
-        {
-            int currentPos = startPos;
-           
-            if (IsZero(inputString[currentPos]))
-            {
-                if (inputString[currentPos + 1] != '.' || IsDigit(inputString[currentPos + 1]))
-                    return (false);
-                currentPos = currentPos + 2;
-            }
-            while (currentPos < endPos)
-            {
-                if (!IsDigit(inputString[currentPos]) && inputString[currentPos] != '.')
-                    return (false);
-                currentPos++;
-            }
-            return (true);
-        }
+        static int GetExponentIndex(string input)
+            => input.IndexOfAny(new[] { 'e', 'E' });
 
-        public static bool CheckNoPeriod(string inputString, int startPos, int endPos)
-        {
-            int currentPos = startPos;
+        static bool IsNullOrEmpty(string input)
+            => string.IsNullOrEmpty(input);
 
-            if (IsZero(inputString[currentPos]) && (endPos - startPos > 1))
-                return (false);
-            return (CheckIfOnlyDigits(inputString, currentPos, endPos));
-        }
+        static bool IsDigit(char chr)
+            => chr >= '0' && chr <= '9';
 
-        public static bool CheckBeforeExp(string inputString, int endPos)
-        {
-            int currentPos = 0;
-            Count countInput = CountPeriods(inputString, inputString.Length);
+        static bool IsZero(char chr)
+            => chr == '0';
 
-            if (IsNegativeSign(inputString[currentPos]))
-                currentPos++;
-            if (countInput.countPeriods == 1)
-            {
-                if (!IsDigit(inputString[countInput.periodIndex + 1]))
-                    return (false);
-                return CheckOnePeriod(inputString, currentPos, endPos);
-            }
-            else if (countInput.countPeriods == 0)
-                return CheckNoPeriod(inputString, currentPos, endPos);
-            else
-                return (false);
-        }
+        static bool IsPeriod(char chr)
+            => chr == '.';
 
-        public static bool CheckAfterExp(string inputString, int eIndex)
-        {
-            int currentPos = eIndex + 1;
-           
-            if (IsPositiveSign(inputString[currentPos]) || IsNegativeSign(inputString[currentPos]))
-                currentPos++;
-            if (currentPos > inputString.Length)
-                return (false);
-            return (CheckIfOnlyDigits(inputString, currentPos, inputString.Length));           
-        }
+        static bool IsSign(char chr)
+            => chr == '-' || chr == '+';
 
-        public static bool ValidateNumber(string inputString)
-        {
-            Count countInput = CountPeriods(inputString, inputString.Length);
-
-            if (countInput.eIndex == 0 || countInput.periodIndex == 0)
-                return (false);
-            if (countInput.eIndex == inputString.Length - 1 || countInput.periodIndex == inputString.Length - 1)
-                return (false);
-
-            if (countInput.countE == 1)
-            { 
-                return (CheckBeforeExp(inputString, countInput.eIndex) && CheckAfterExp(inputString, countInput.eIndex));
-            }
-            else if (countInput.countE == 0)
-            {
-                return (CheckBeforeExp(inputString, inputString.Length));
-            }
-            else
-                return (false);
-        }
+        static bool IsPeriodContext(string input, int i)
+            => IsPeriod(input[i]) && i + 1 < input.Length && IsDigit(input[i + 1]);
     }
 }
